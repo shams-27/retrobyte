@@ -60,11 +60,21 @@ const PRODUCTS = [
 ];
 /* ========================================================= */
 
+/* Auto-optimized images: resized and converted to WebP on the fly by the free wsrv.nl image CDN.
+   Works on your live site. On localhost or file:// it uses the original files instead. */
+const IMG_CDN = location.protocol.startsWith("http") && !/^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
+const optimized = (path, w, h) => IMG_CDN
+  ? "https://wsrv.nl/?url=" + encodeURIComponent(new URL(path, location.href).href) + "&w=" + w + "&h=" + h + "&fit=cover&output=webp&q=78&we=1"
+  : path;
+const fullSrc = p => optimized(p.img, 1200, 900);
+const thumbSrc = p => optimized(p.img, 600, 450);
+const FALLBACK = 'onerror="this.onerror=null;this.src=this.dataset.src"'; // if the CDN fails, load the original
+
 const fmt = n => "৳" + n.toLocaleString("en-IN");
 function waLink(text) { return "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(text); }
 function cardHTML(p) {
   return `<article class="card">${p.badge ? `<span class="badge">${p.badge}</span>` : ""}
-    <div class="thumb"><img src="${p.img}" alt="${p.name}" loading="lazy"></div>
+    <div class="thumb"><img src="${thumbSrc(p)}" data-src="${p.img}" ${FALLBACK} alt="${p.name}" width="600" height="450" loading="lazy" decoding="async"></div>
     <h3><a class="stretch" href="product.html?id=${p.id}">${p.name}</a></h3>
     <p>${p.desc}</p>
     <div class="price"><b>${fmt(p.price)}</b>${p.old ? `<s>${fmt(p.old)}</s>` : ""}</div>
