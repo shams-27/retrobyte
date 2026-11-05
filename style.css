@@ -1,35 +1,4 @@
 :root {
-  --bg: #f3ecdd;
-  --surface: #fbf6ea;
-  --text: #231d14;
-  --muted: #6d6252;
-  --line: #d8cbb0;
-  --accent: #c2570c;
-  --accent2: #a8480a;
-  --onaccent: #fff;
-  --tag: #231d14;
-  --tagtext: #f3ecdd;
-  box-sizing: border-box;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px)
-}
-
-@media (prefers-color-scheme:dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #12100c;
-    --surface: #1c1811;
-    --text: #f4e9d0;
-    --muted: #a39878;
-    --line: #3a3222;
-    --accent: #ff9f1c;
-    --accent2: #ffd166;
-    --onaccent: #12100c;
-    --tag: #ffb000;
-    --tagtext: #12100c
-  }
-}
-
-:root[data-theme="dark"] {
   --bg: #12100c;
   --surface: #1c1811;
   --text: #f4e9d0;
@@ -39,7 +8,12 @@
   --accent2: #ffd166;
   --onaccent: #12100c;
   --tag: #ffb000;
-  --tagtext: #12100c
+  --tagtext: #12100c;
+  --dot: color-mix(in srgb, #f4e9d0 70%, transparent);
+  --dot2: color-mix(in srgb, #ffd166 85%, transparent);
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px)
 }
 
 html {
@@ -394,7 +368,6 @@ body::after {
 html::before {
   inset: 0;
   z-index: -3;
-  --dot: color-mix(in srgb, var(--text) 70%, transparent);
   background:
     radial-gradient(1.5px 1.5px at 30px 40px, var(--dot), transparent),
     radial-gradient(1px 1px at 120px 90px, var(--dot), transparent),
@@ -410,7 +383,6 @@ html::before {
 html::after {
   inset: 0;
   z-index: -3;
-  --dot2: color-mix(in srgb, var(--accent2) 85%, transparent);
   background:
     radial-gradient(2px 2px at 60px 70px, var(--dot2), transparent),
     radial-gradient(2.5px 2.5px at 240px 150px, var(--dot2), transparent),
