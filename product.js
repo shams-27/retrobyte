@@ -2,7 +2,7 @@ const $ = id => document.getElementById(id);
 const p = PRODUCTS.find(x => x.id === new URLSearchParams(location.search).get("id"));
 const root = $("detail");
 
-if(!p){
+if (!p) {
   root.innerHTML = `<div class="empty">Product not found. <a href="index.html#shop">Back to shop</a></div>`;
 } else {
   document.title = p.name + " · RetroByte";
@@ -10,7 +10,7 @@ if(!p){
   root.innerHTML = `
     <nav class="crumb"><a href="index.html#shop">Shop</a> / ${p.cat} / ${p.name}</nav>
     <div class="detail">
-      <div class="dmedia">${p.badge ? `<span class="badge">${p.badge}</span>` : ""}<div class="ico big" aria-hidden="true">${p.icon}</div></div>
+      <div class="dmedia">${p.badge ? `<span class="badge">${p.badge}</span>` : ""}<div class="thumb big"><img src="${p.img}" alt="${p.name}"></div></div>
       <div class="dinfo">
         <span class="cat">${p.cat}</span>
         <h1>${p.name}</h1>
@@ -31,12 +31,12 @@ if(!p){
 
   let qty = 1;
   const upd = () => {
-    if(p.stock){ $("n").textContent = qty; $("total").textContent = "Total: " + fmt(p.price * qty); }
+    if (p.stock) { $("n").textContent = qty; $("total").textContent = "Total: " + fmt(p.price * qty); }
     $("order").href = waLink(p.stock
       ? `Hi! I want to order ${qty} x ${p.name} (${fmt(p.price * qty)})`
       : `Hi! When will ${p.name} be back in stock?`);
   };
-  if(p.stock){
+  if (p.stock) {
     $("minus").onclick = () => { qty = Math.max(1, qty - 1); upd(); };
     $("plus").onclick = () => { qty = Math.min(20, qty + 1); upd(); };
   }
