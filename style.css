@@ -431,8 +431,8 @@ body::before {
   height: 58vh;
   z-index: -1;
   background-image:
-    linear-gradient(color-mix(in srgb, var(--accent) 45%, transparent) 2px, transparent 2px),
-    linear-gradient(90deg, color-mix(in srgb, var(--accent) 45%, transparent) 2px, transparent 2px);
+    linear-gradient(color-mix(in srgb, var(--accent) 15%, transparent) 2px, transparent 2px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 15%, transparent) 2px, transparent 2px);
   background-size: 60px 60px;
   transform-origin: 50% 0;
   transform: perspective(300px) rotateX(62deg);
