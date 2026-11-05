@@ -10,7 +10,7 @@ if (!p) {
   root.innerHTML = `
     <nav class="crumb"><a href="index.html#shop">Shop</a> / ${p.cat} / ${p.name}</nav>
     <div class="detail">
-      <div class="dmedia">${p.badge ? `<span class="badge">${p.badge}</span>` : ""}<div class="thumb big"><img src="${p.img}" alt="${p.name}"></div></div>
+      <div class="dmedia">${p.badge ? `<span class="badge">${p.badge}</span>` : ""}<div class="thumb big"><img src="${fullSrc(p)}" data-src="${p.img}" ${FALLBACK} alt="${p.name}" width="1200" height="900" fetchpriority="high" decoding="async"></div></div>
       <div class="dinfo">
         <span class="cat">${p.cat}</span>
         <h1>${p.name}</h1>
