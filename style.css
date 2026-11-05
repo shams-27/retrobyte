@@ -759,6 +759,16 @@ body::after {
   }
 }
 
+/* Logo block mark: drawn in CSS so it is the same height on every device */
+.logo .mark {
+  display: inline-block;
+  width: .34em;
+  height: .62em;
+  background: var(--accent);
+  margin-right: .4em;
+  vertical-align: baseline
+}
+
 /* Two-tone logo text */
 .logo .re {
   color: var(--accent)
