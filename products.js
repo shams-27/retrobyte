@@ -1,5 +1,5 @@
 /* ====== SETTINGS (only touched once, during setup) ====== */
-const WHATSAPP = "8801882790501"; // country code + number, no + or spaces
+const WHATSAPP = "8801XXXXXXXXX"; // country code + number, no + or spaces
 // Google Sheets > File > Share > Publish to web > pick the "Products" tab > CSV > Publish > paste the link here
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5r5Xr32rGRg3pV-nvNdqt3fJ2kwWA2MdeUwpUjLNmvNGkHRosDohx8hKamu8ak4HMxViJLsbNVfb/pub?gid=382459831&single=true&output=csv";
 /* ======================================================== */
@@ -54,12 +54,21 @@ function csvToProducts(text) {
     while (used.has(id)) id = slug(g("id") || name) + "-" + n++;
     used.add(id);
     const img = g("image");
+    const toPath = v => /^(https?:|data:)/i.test(v) ? v : "images/" + v;
+    const mainImg = !img ? "images/" + id + ".png" : toPath(img);
+    // gallery column: a number N = images/<id>.png, <id>-2.png ... <id>-N.png; or one file name / link per line
+    const gal = g("gallery");
+    let extras = [];
+    if (/^\d+$/.test(gal)) { for (let i = 2; i <= Math.min(parseInt(gal, 10), 10); i++) extras.push("images/" + id + "-" + i + ".png"); }
+    else extras = lines(gal).map(toPath);
     out.push({
       id, name, price, old,
       cat: g("category") || "Other",
       badge: g("badge"),
       stock: !isNo(g("in_stock")),
-      img: !img ? PLACEHOLDER : /^(https?:|data:)/i.test(img) ? img : "images/" + img,
+      // image column blank -> images/<id>.png (e.g. CBS01 -> images/cbs01.png); otherwise a file name or full link
+      img: mainImg,
+      imgs: [...new Set([mainImg, ...extras])].slice(0, 10),
       desc: g("short_description"),
       long: g("description"),
       features: lines(g("features")),
@@ -100,7 +109,8 @@ const optimized = (path, w, h) => (IMG_CDN && !path.startsWith("data:"))
   : path;
 const fullSrc = p => optimized(p.img, 1200, 900);
 const thumbSrc = p => optimized(p.img, 600, 450);
-const FALLBACK = 'onerror="this.onerror=null;this.src=this.dataset.src"'; // if the CDN fails, load the original
+// if the CDN image fails, try the original file; if that is missing too, show the "No image" placeholder
+const FALLBACK = 'onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.dataset.src}else{this.onerror=null;this.src=PLACEHOLDER}"';
 
 const fmt = n => "৳" + n.toLocaleString("en-IN");
 function waLink(text) { return "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(text); }

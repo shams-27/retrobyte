@@ -1158,3 +1158,147 @@ input[type=search]::-webkit-search-cancel-button {
     will-change: transform
   }
 }
+
+/* Product page image gallery */
+.dmedia .badge {
+  z-index: 3
+}
+
+.gstage {
+  position: relative
+}
+
+.gstage #gmain.fade {
+  animation: gfade .22s ease-out
+}
+
+@keyframes gfade {
+  from {
+    opacity: .25
+  }
+}
+
+.gnav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  padding: 0 0 4px;
+  border: 2px solid var(--text);
+  background: var(--surface);
+  color: var(--text);
+  font: 700 28px/1 "JetBrains Mono", monospace;
+  cursor: pointer;
+  transition: transform .16s ease-out, background-color .16s ease-out
+}
+
+.gnav[hidden],
+.gcount[hidden] {
+  display: none
+}
+
+.gnav.prev {
+  left: 10px
+}
+
+.gnav.next {
+  right: 10px
+}
+
+@media (hover: hover) {
+  .gnav:hover {
+    background: var(--accent);
+    color: var(--onaccent);
+    transform: translateY(-2px)
+  }
+}
+
+.gnav:active {
+  transform: translateY(1px)
+}
+
+.gcount {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 2;
+  padding: 3px 10px;
+  background: var(--bg);
+  border: 2px solid var(--line);
+  color: var(--text);
+  font: 700 13px "JetBrains Mono", monospace
+}
+
+.gthumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px
+}
+
+.gthumbs:empty {
+  display: none
+}
+
+.gt {
+  width: 84px;
+  aspect-ratio: 4/3;
+  padding: 0;
+  border: 2px solid var(--line);
+  background: var(--bg);
+  overflow: hidden;
+  cursor: pointer;
+  opacity: .6;
+  transition: opacity .16s ease-out, transform .16s ease-out
+}
+
+.gt img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover
+}
+
+.gt[aria-current="true"] {
+  opacity: 1;
+  border-color: var(--accent2);
+  outline: 2px solid var(--accent2);
+  outline-offset: 2px
+}
+
+@media (hover: hover) {
+  .gt:hover {
+    opacity: 1;
+    transform: translateY(-2px)
+  }
+}
+
+.gnav:focus-visible,
+.gt:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 3px
+}
+
+@media (max-width:600px) {
+  .gt {
+    width: 64px
+  }
+
+  .gthumbs {
+    gap: 8px
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .gstage #gmain.fade {
+    animation: none
+  }
+
+  .gnav,
+  .gt {
+    transition: none
+  }
+}
