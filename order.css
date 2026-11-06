@@ -1,0 +1,156 @@
+/* Order form modal */
+.ord-ov {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(0, 0, 0, .7)
+}
+
+.ord-modal {
+  position: fixed;
+  z-index: 130;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(520px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 2px solid var(--text);
+  box-shadow: 6px 6px 0 var(--accent)
+}
+
+.ord-ov[hidden],
+.ord-modal[hidden] {
+  display: none
+}
+
+.ord-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 2px dashed var(--line)
+}
+
+.ord-head h2 {
+  margin: 0;
+  font-size: 20px
+}
+
+.ord-body {
+  overflow-y: auto;
+  padding: 16px 18px 20px
+}
+
+.ord-items {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0
+}
+
+.ord-items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px
+}
+
+.ord-items b {
+  color: var(--accent2);
+  white-space: nowrap
+}
+
+.ord-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 8px 0 4px
+}
+
+.ord-total b {
+  font-size: 26px;
+  color: var(--accent2)
+}
+
+#ordform {
+  margin-top: 14px
+}
+
+#ordform label {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 14px;
+  font-weight: 700
+}
+
+#ordform label span {
+  color: var(--muted);
+  font-weight: 400
+}
+
+#ordform input,
+#ordform textarea {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font: 16px "JetBrains Mono", monospace;
+  caret-color: var(--accent);
+  resize: vertical
+}
+
+#ordform input:focus,
+#ordform textarea:focus {
+  outline: none;
+  border-color: var(--accent2)
+}
+
+/* spam trap: invisible to people, bots fill it in */
+.ord-hp {
+  position: absolute !important;
+  left: -9999px;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0
+}
+
+.ord-err {
+  min-height: 1.4em;
+  margin: 12px 0 8px;
+  color: #ff6b6b;
+  font-size: 14px
+}
+
+#ordform .btn,
+.ord-done .btn {
+  display: block;
+  width: 100%;
+  text-align: center
+}
+
+#ordform .btn:disabled {
+  opacity: .6;
+  cursor: wait
+}
+
+.ord-done {
+  text-align: center;
+  padding: 10px 0
+}
+
+.ord-ok {
+  margin: 0 0 6px;
+  font-size: 56px;
+  line-height: 1;
+  color: #2e9e5b
+}
+
+.ord-done .btn {
+  margin-top: 18px
+}

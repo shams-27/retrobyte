@@ -101,7 +101,7 @@ function show(status) {
         <p class="long">${esc(p.long).replace(/\r?\n/g, "<br>")}</p>
         <div class="stock ${p.stock ? "ok" : "out"}">● ${p.stock ? "In stock" : "Out of stock"}</div>
         ${p.stock ? `<div class="qty"><button type="button" id="minus" aria-label="Decrease quantity">−</button><span id="n">1</span><button type="button" id="plus" aria-label="Increase quantity">+</button><span class="total" id="total"></span></div>` : ""}
-        <a id="order" class="btn big-btn" target="_blank" rel="noopener">${p.stock ? "Order on WhatsApp" : "Ask about restock"}</a>
+        <div class="actions">${p.stock ? `<button type="button" id="addcart" class="btn alt big-btn">Add to cart</button>` : ""}<button type="button" id="order" class="btn big-btn" data-order="${esc(p.id)}"${p.stock ? "" : ' data-type="restock"'}>${p.stock ? "Order now" : "Ask about restock"}</button></div>
         ${p.features.length ? `<h2 class="sec">Features</h2><ul class="feat">${p.features.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}
         ${p.specs.length ? `<h2 class="sec">Specifications</h2><table class="specs">${p.specs.map(s => `<tr><th>${esc(s[0])}</th><td>${esc(s[1])}</td></tr>`).join("")}</table>` : ""}
         <p class="note">Cash on delivery across Bangladesh. Delivery charge extra.</p>
@@ -113,13 +113,12 @@ function show(status) {
   let qty = 1;
   const upd = () => {
     if (p.stock) { $("n").textContent = qty; $("total").textContent = "Total: " + fmt(p.price * qty); }
-    $("order").href = waLink(p.stock
-      ? `Hi! I want to order ${qty} x ${p.name} (${fmt(p.price * qty)})`
-      : `Hi! When will ${p.name} be back in stock?`);
+    $("order").dataset.qty = qty;
   };
   if (p.stock) {
     $("minus").onclick = () => { qty = Math.max(1, qty - 1); upd(); };
     $("plus").onclick = () => { qty = Math.min(20, qty + 1); upd(); };
+    $("addcart").onclick = () => cartAdd(p.id, qty);
   }
   upd();
   initGallery(p);

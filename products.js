@@ -1,5 +1,7 @@
 /* ====== SETTINGS (only touched once, during setup) ====== */
-const WHATSAPP = "8801XXXXXXXXX"; // country code + number, no + or spaces
+// Orders are emailed to the shop by a small Google Apps Script (see apps-script.gs for the 2-minute setup).
+// Paste the Web app URL here (it ends in /exec).
+const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycbzCiiw1mmeATy4s9yFlQy-HLclINaXrhDSf3Yj13bub84vEgqNZGjS32CJ934zztG1rSw/exec";
 // Google Sheets > File > Share > Publish to web > pick the "Products" tab > CSV > Publish > paste the link here
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5r5Xr32rGRg3pV-nvNdqt3fJ2kwWA2MdeUwpUjLNmvNGkHRosDohx8hKamu8ak4HMxViJLsbNVfb/pub?gid=382459831&single=true&output=csv";
 /* ======================================================== */
@@ -113,13 +115,14 @@ const thumbSrc = p => optimized(p.img, 600, 450);
 const FALLBACK = 'onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.dataset.src}else{this.onerror=null;this.src=PLACEHOLDER}"';
 
 const fmt = n => "৳" + n.toLocaleString("en-IN");
-function waLink(text) { return "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(text); }
 function cardHTML(p) {
   return `<article class="card">${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}
     <div class="thumb"><img src="${esc(thumbSrc(p))}" data-src="${esc(p.img)}" ${FALLBACK} alt="${esc(p.name)}" width="600" height="450" loading="lazy" decoding="async"></div>
     <h3><a class="stretch" href="product.html?id=${encodeURIComponent(p.id)}">${esc(p.name)}</a></h3>
     <p>${esc(p.desc)}</p>
+    ${p.stock ? "" : `<div class="stock out">● Out of stock</div>`}
     <div class="price"><b>${fmt(p.price)}</b>${p.old ? `<s>${fmt(p.old)}</s>` : ""}</div>
-    <a class="btn" href="${esc(waLink("Hi! I want to order: " + p.name + " (" + fmt(p.price) + ")"))}" target="_blank" rel="noopener">Order on WhatsApp</a>
+    <div class="card-actions">${p.stock ? `<button type="button" class="btn alt" data-add="${esc(p.id)}">Add to cart</button>` : ""}
+    <button type="button" class="btn" data-order="${esc(p.id)}"${p.stock ? "" : ' data-type="restock"'}>${p.stock ? "Order now" : "Ask about restock"}</button></div>
   </article>`;
 }
