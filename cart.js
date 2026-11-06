@@ -62,7 +62,9 @@ function cartClose() {
 
 function cartRender() {
   const ids = Object.keys(CART);
-  cartN.textContent = ids.reduce((s, id) => s + CART[id], 0);
+  const n = ids.reduce((s, id) => s + CART[id], 0);
+  cartN.textContent = n;
+  cartFab.hidden = n === 0; // floating button only shows when the cart has items
 
   // keep keyboard focus on the same +/- button after the list is rebuilt
   const a = document.activeElement, fk = a && a.closest && a.closest("#cartbody") ? a.dataset.k : null;
