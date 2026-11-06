@@ -277,6 +277,23 @@
   margin: 14px 0
 }
 
+@media (max-width:600px) {
+  .actions {
+    flex-wrap: nowrap;
+    gap: 10px
+  }
+
+  .actions .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 6px;
+    font-size: 14px;
+    line-height: 1.25;
+    white-space: nowrap
+  }
+}
+
 .actions .btn {
   flex: 1 1 0;
   min-width: 0;
