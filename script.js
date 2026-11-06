@@ -1,14 +1,39 @@
-const cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];
 let active = "All", query = "";
 const $ = id => document.getElementById(id);
+let cards = []; // [{ el, cat, text }], built once per data load
 
-function render(){
-  const list = PRODUCTS.filter(p => (active === "All" || p.cat === active) && (p.name + " " + p.desc).toLowerCase().includes(query));
-  $("grid").innerHTML = list.length ? list.map(cardHTML).join("") : `<div class="empty">No products found.</div>`;
+/* Cards are built once; filtering only shows/hides them. Rebuilding every card (and re-loading
+   every image) on each tab switch was what made switching back to "All" feel laggy. */
+function build() {
+  $("grid").innerHTML = PRODUCTS.map(cardHTML).join("") + `<div class="empty" id="none" hidden>No products found.</div>`;
+  const els = $("grid").querySelectorAll(".card");
+  cards = PRODUCTS.map((p, i) => ({ el: els[i], cat: p.cat, text: (p.name + " " + p.desc).toLowerCase() }));
 }
-function chips(){
-  $("chips").innerHTML = cats.map(c => `<button class="chip" aria-pressed="${c === active}" data-c="${c}">${c}</button>`).join("");
-  $("chips").onclick = e => { const c = e.target.dataset.c; if(!c) return; active = c; chips(); render(); };
+function render() {
+  let shown = 0;
+  for (const c of cards) {
+    const show = (active === "All" || c.cat === active) && c.text.includes(query);
+    c.el.hidden = !show;
+    if (show) shown++;
+  }
+  $("none").hidden = shown > 0;
 }
+function chips() {
+  const cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];
+  if (!cats.includes(active)) active = "All";
+  $("chips").innerHTML = cats.map(c => `<button class="chip" aria-pressed="${c === active}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+}
+$("chips").onclick = e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  active = b.dataset.c;
+  // update in place (instead of rebuilding) so the chip colors can animate
+  $("chips").querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === b));
+  render();
+};
 $("q").oninput = e => { query = e.target.value.toLowerCase().trim(); render(); };
-chips(); render();
+
+$("grid").innerHTML = `<div class="empty">Loading products…</div>`;
+loadProducts(status => {
+  if (status === "error") { $("grid").innerHTML = `<div class="empty">Couldn’t load products. Please refresh the page.</div>`; return; }
+  chips(); build(); render();
+});

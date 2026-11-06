@@ -1,69 +1,101 @@
-/* ====== EDIT HERE: your products, prices and contact ====== */
-const WHATSAPP = "8801XXXXXXXXX"; // country code + number, no + or spaces
-const PRODUCTS = [
-  {
-    id: "cassette-speaker", name: "Cassette Bluetooth Speaker", cat: "Audio", price: 2490, old: 2990, img: "images/cassette-speaker.png", badge: "Bestseller", stock: true,
-    desc: "Tape-deck looks, Bluetooth 5.3, 8-hour battery.",
-    long: "A pocket-sized speaker styled like a classic cassette player. Loud, clear sound with a warm retro finish that looks great on any desk or shelf.",
-    features: ["Bluetooth 5.3 with a stable 10 m range", "8-hour playtime, USB-C charging", "Built-in mic for hands-free calls", "MicroSD card slot and AUX input"],
-    specs: [["Battery", "1200 mAh"], ["Output", "5 W"], ["Connectivity", "Bluetooth 5.3, AUX, microSD"], ["Charging", "USB-C, about 2 hours"], ["Warranty", "6 months"]]
-  },
-  {
-    id: "retro-keyboard", name: "Retro Mechanical Keyboard", cat: "Desk setup", price: 4590, old: null, img: "images/retro-keyboard.png", badge: "", stock: true,
-    desc: "Hot-swappable switches, cream and pastel keycaps.",
-    long: "A compact mechanical keyboard with round retro keycaps and a satisfying typing feel. Swap switches without soldering to make it yours.",
-    features: ["Hot-swappable switches", "Wired USB-C and Bluetooth modes", "Cream and pastel keycaps", "RGB backlight with 10 effects"],
-    specs: [["Layout", "75%, 84 keys"], ["Switches", "Linear (swappable)"], ["Connectivity", "USB-C, Bluetooth 5.0"], ["Battery", "2000 mAh"], ["Warranty", "6 months"]]
-  },
-  {
-    id: "pixel-clock", name: "Pixel LED Desk Clock", cat: "Desk setup", price: 1650, old: 1950, img: "images/pixel-clock.png", badge: "New", stock: true,
-    desc: "8-bit pixel display with alarm and temperature.",
-    long: "A tiny desk clock with a glowing pixel-art display. Shows time, date and temperature, and wakes you up with a retro alarm tune.",
-    features: ["8-bit style LED display", "Alarm, date and temperature", "Adjustable brightness", "USB powered, no battery needed"],
-    specs: [["Display", "Pixel LED matrix"], ["Power", "5 V USB"], ["Size", "About 12 x 5 cm"], ["Warranty", "3 months"]]
-  },
-  {
-    id: "retro-gamepad", name: "Retro Gamepad (USB/BT)", cat: "Gaming", price: 1890, old: null, img: "images/retro-gamepad.png", badge: "", stock: true,
-    desc: "Classic console layout for PC, Android and TV box.",
-    long: "A wireless gamepad with the classic console layout. Works with PC, Android phones and TV boxes, so you can play your favorite old-school games anywhere.",
-    features: ["USB and Bluetooth connection", "Works with PC, Android and TV box", "Comfortable classic D-pad", "Rechargeable battery"],
-    specs: [["Connectivity", "USB, Bluetooth 4.0"], ["Battery", "600 mAh"], ["Compatibility", "Windows, Android, TV box"], ["Warranty", "3 months"]]
-  },
-  {
-    id: "braided-usbc", name: "Braided USB-C Cable 1.2m", cat: "Accessories", price: 490, old: 650, img: "images/braided-usbc.png", badge: "", stock: true,
-    desc: "Fast charge, cloth braid, color-matched tips.",
-    long: "A tough cloth-braided USB-C cable that resists tangles and fraying, with color-matched connector tips for a retro look.",
-    features: ["Up to 60 W fast charging", "Tangle-free cloth braid", "Data transfer up to 480 Mbps", "Reinforced connector ends"],
-    specs: [["Length", "1.2 m"], ["Power", "Up to 60 W"], ["Connector", "USB-C to USB-C"], ["Warranty", "3 months"]]
-  },
-  {
-    id: "magnetic-stand", name: "Magnetic Phone Stand", cat: "Accessories", price: 790, old: null, img: "images/magnetic-stand.png", badge: "", stock: true,
-    desc: "Foldable aluminum stand with a retro finish.",
-    long: "A foldable aluminum stand that holds your phone at a comfortable angle on any desk. Folds flat to slip into a bag.",
-    features: ["Strong magnetic hold", "Foldable and portable", "Non-slip silicone base", "Adjustable viewing angle"],
-    specs: [["Material", "Aluminum alloy"], ["Fits", "Phones up to 7 inches"], ["Weight", "About 150 g"], ["Warranty", "3 months"]]
-  },
-  {
-    id: "neon-strip", name: "Neon Light Strip 2m", cat: "Desk setup", price: 1190, old: 1490, img: "images/neon-strip.png", badge: "Sale", stock: true,
-    desc: "USB powered, synthwave color modes and remote.",
-    long: "A 2-meter LED strip with vivid neon colors and preset scenes. Stick it behind your monitor or along a shelf to light up your room.",
-    features: ["16 colors and 4 modes", "Remote control included", "USB powered, plug into any adapter", "Adhesive back, easy to cut and stick"],
-    specs: [["Length", "2 m"], ["Power", "5 V USB"], ["Control", "IR remote"], ["Warranty", "3 months"]]
-  },
-  {
-    id: "retro-handset", name: "Retro Handset for Phone", cat: "Audio", price: 990, old: null, img: "images/retro-handset.png", badge: "New", stock: false,
-    desc: "Old-school telephone handset for 3.5mm / USB-C.",
-    long: "A classic telephone handset that plugs into your phone. Enjoy calls the old-school way with clear sound and a fun vintage look.",
-    features: ["3.5 mm and USB-C adapter", "Clear speaker and mic", "Coiled cord", "Great as a gift"],
-    specs: [["Connector", "3.5 mm (USB-C adapter included)"], ["Cord", "Coiled, about 1 m"], ["Warranty", "3 months"]]
-  }
-];
-/* ========================================================= */
+/* ====== SETTINGS (only touched once, during setup) ====== */
+const WHATSAPP = "8801882790501"; // country code + number, no + or spaces
+// Google Sheets > File > Share > Publish to web > pick the "Products" tab > CSV > Publish > paste the link here
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5r5Xr32rGRg3pV-nvNdqt3fJ2kwWA2MdeUwpUjLNmvNGkHRosDohx8hKamu8ak4HMxViJLsbNVfb/pub?gid=382459831&single=true&output=csv";
+/* ======================================================== */
 
+let PRODUCTS = [];
+const CACHE_KEY = "retrobyte_sheet_csv_v1";
+
+/* ---------- helpers ---------- */
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const PLACEHOLDER = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450"><rect width="100%" height="100%" fill="#1c1811"/><text x="50%" y="50%" fill="#a39878" font-family="monospace" font-size="24" text-anchor="middle">No image</text></svg>');
+
+/* ---------- CSV parsing (handles quotes, commas and line breaks inside cells) ---------- */
+function parseCSV(text) {
+  text = text.replace(/^\uFEFF/, "");
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); cell = ""; rows.push(row); row = [];
+    } else cell += c;
+  }
+  if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+
+/* ---------- sheet rows -> PRODUCTS ---------- */
+const isNo = v => /^(false|no|n|0|out|out of stock)$/i.test(String(v).trim());
+const lines = v => String(v || "").split(/\r?\n|\|/).map(s => s.trim()).filter(Boolean);
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "product";
+
+function csvToProducts(text) {
+  const rows = parseCSV(text).filter(r => r.some(c => c.trim() !== ""));
+  if (rows.length < 2) return [];
+  const head = rows[0].map(h => h.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""));
+  const used = new Set();
+  const out = [];
+  for (const r of rows.slice(1)) {
+    const g = k => (r[head.indexOf(k)] ?? "").trim();
+    const name = g("name");
+    const price = parseFloat(g("price").replace(/[^\d.]/g, ""));
+    if (!name || isNaN(price)) continue;       // skip incomplete rows
+    if (isNo(g("show"))) continue;             // "show" unticked = hidden
+    let old = parseFloat(g("old_price").replace(/[^\d.]/g, ""));
+    if (isNaN(old) || old <= price) old = null;
+    let id = slug(g("id") || name), n = 2;
+    while (used.has(id)) id = slug(g("id") || name) + "-" + n++;
+    used.add(id);
+    const img = g("image");
+    out.push({
+      id, name, price, old,
+      cat: g("category") || "Other",
+      badge: g("badge"),
+      stock: !isNo(g("in_stock")),
+      img: !img ? PLACEHOLDER : /^(https?:|data:)/i.test(img) ? img : "images/" + img,
+      desc: g("short_description"),
+      long: g("description"),
+      features: lines(g("features")),
+      specs: lines(g("specs")).map(l => { const i = l.indexOf(":"); return i < 0 ? ["", l] : [l.slice(0, i).trim(), l.slice(i + 1).trim()]; })
+    });
+  }
+  return out;
+}
+
+/* Loads products from the sheet. Shows the last saved copy instantly (if any),
+   then refreshes in the background. cb("ok") runs when there is new data to show,
+   cb("error") only if nothing could be loaded at all. */
+async function loadProducts(cb) {
+  let cached = null;
+  try { cached = localStorage.getItem(CACHE_KEY); } catch (e) { }
+  if (cached) { PRODUCTS = csvToProducts(cached); cb("ok"); }
+  try {
+    if (!/^https?:/.test(SHEET_CSV_URL)) throw new Error("Sheet link not set");
+    const res = await fetch(SHEET_CSV_URL);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const text = await res.text();
+    if (text === cached) return;
+    PRODUCTS = csvToProducts(text);
+    try { localStorage.setItem(CACHE_KEY, text); } catch (e) { }
+    cb("ok");
+  } catch (err) {
+    console.error("Could not load products:", err);
+    if (!cached) cb("error");
+  }
+}
+
+/* ---------- images ---------- */
 /* Auto-optimized images: resized and converted to WebP on the fly by the free wsrv.nl image CDN.
    Works on your live site. On localhost or file:// it uses the original files instead. */
 const IMG_CDN = location.protocol.startsWith("http") && !/^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
-const optimized = (path, w, h) => IMG_CDN
+const optimized = (path, w, h) => (IMG_CDN && !path.startsWith("data:"))
   ? "https://wsrv.nl/?url=" + encodeURIComponent(new URL(path, location.href).href) + "&w=" + w + "&h=" + h + "&fit=cover&output=webp&q=78&we=1"
   : path;
 const fullSrc = p => optimized(p.img, 1200, 900);
@@ -73,11 +105,11 @@ const FALLBACK = 'onerror="this.onerror=null;this.src=this.dataset.src"'; // if 
 const fmt = n => "৳" + n.toLocaleString("en-IN");
 function waLink(text) { return "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(text); }
 function cardHTML(p) {
-  return `<article class="card">${p.badge ? `<span class="badge">${p.badge}</span>` : ""}
-    <div class="thumb"><img src="${thumbSrc(p)}" data-src="${p.img}" ${FALLBACK} alt="${p.name}" width="600" height="450" loading="lazy" decoding="async"></div>
-    <h3><a class="stretch" href="product.html?id=${p.id}">${p.name}</a></h3>
-    <p>${p.desc}</p>
+  return `<article class="card">${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}
+    <div class="thumb"><img src="${esc(thumbSrc(p))}" data-src="${esc(p.img)}" ${FALLBACK} alt="${esc(p.name)}" width="600" height="450" loading="lazy" decoding="async"></div>
+    <h3><a class="stretch" href="product.html?id=${encodeURIComponent(p.id)}">${esc(p.name)}</a></h3>
+    <p>${esc(p.desc)}</p>
     <div class="price"><b>${fmt(p.price)}</b>${p.old ? `<s>${fmt(p.old)}</s>` : ""}</div>
-    <a class="btn" href="${waLink("Hi! I want to order: " + p.name + " (" + fmt(p.price) + ")")}" target="_blank" rel="noopener">Order on WhatsApp</a>
+    <a class="btn" href="${esc(waLink("Hi! I want to order: " + p.name + " (" + fmt(p.price) + ")"))}" target="_blank" rel="noopener">Order on WhatsApp</a>
   </article>`;
 }

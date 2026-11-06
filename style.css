@@ -169,8 +169,62 @@ input[type=search] {
   position: relative
 }
 
-.card:hover {
-  border-color: var(--accent2)
+/* Card pop-up. Only transform and opacity change on hover (GPU-composited, no repaint):
+   the card's background, border and orange "shadow" are drawn by ::after / ::before so they can move with the card. */
+.card {
+  background: transparent;
+  border-color: transparent;
+  isolation: isolate;
+  transition: transform .16s ease-out
+}
+
+.card::before,
+.card::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  pointer-events: none
+}
+
+.card::before {
+  background: var(--accent);
+  opacity: 0;
+  transform: translate(6px, 8px);
+  transition: opacity .16s ease-out, transform .16s ease-out
+}
+
+.card::after {
+  background: var(--surface);
+  border: 2px solid var(--line)
+}
+
+/* mouse devices only, so touch screens don't get a stuck "hover" state */
+@media (hover: hover) {
+  .card:hover {
+    transform: translate(-4px, -6px);
+    z-index: 2
+  }
+
+  .card:hover::before {
+    opacity: 1
+  }
+}
+
+.card:active {
+  transform: translate(-1px, -2px)
+}
+
+.card:active::before {
+  transform: translate(2px, 3px)
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .card,
+  .card::before {
+    transition: none
+  }
 }
 
 .badge {
@@ -361,7 +415,9 @@ svg {
   }
 }
 
-/* Synthwave background: layered stars, shooting stars, scrolling perspective floor */
+/* Synthwave background: stars, shooting stars, scrolling perspective floor.
+   Performance: only opacity and transform are animated (GPU-composited).
+   Animating background-position or masks forces a full repaint every frame, which makes hover feel janky. */
 html::before,
 html::after,
 body::before,
@@ -371,6 +427,7 @@ body::after {
   pointer-events: none
 }
 
+/* both star layers in one element */
 html::before {
   inset: 0;
   z-index: -3;
@@ -379,25 +436,26 @@ html::before {
     radial-gradient(1px 1px at 120px 90px, var(--dot), transparent),
     radial-gradient(1.5px 1.5px at 200px 30px, var(--dot), transparent),
     radial-gradient(1px 1px at 70px 160px, var(--dot), transparent),
-    radial-gradient(1.5px 1.5px at 180px 190px, var(--dot), transparent);
-  background-size: 230px 230px;
-  -webkit-mask-image: linear-gradient(to bottom, #000, transparent 45vh);
-  mask-image: linear-gradient(to bottom, #000, transparent 45vh);
-  animation: twinkle 4s ease-in-out infinite alternate, stars-drift 90s linear infinite;
-}
-
-html::after {
-  inset: 0;
-  z-index: -3;
-  background:
+    radial-gradient(1.5px 1.5px at 180px 190px, var(--dot), transparent),
     radial-gradient(2px 2px at 60px 70px, var(--dot2), transparent),
     radial-gradient(2.5px 2.5px at 240px 150px, var(--dot2), transparent),
     radial-gradient(2px 2px at 140px 260px, var(--dot2), transparent),
     radial-gradient(2.5px 2.5px at 300px 300px, var(--dot2), transparent);
-  background-size: 340px 340px;
+  background-size: 230px 230px, 230px 230px, 230px 230px, 230px 230px, 230px 230px, 340px 340px, 340px 340px, 340px 340px, 340px 340px;
   -webkit-mask-image: linear-gradient(to bottom, #000, transparent 45vh);
   mask-image: linear-gradient(to bottom, #000, transparent 45vh);
-  animation: twinkle 6s ease-in-out -3s infinite alternate-reverse, stars-drift2 140s linear infinite reverse;
+  will-change: opacity;
+  animation: twinkle 4s ease-in-out infinite alternate;
+}
+
+/* fades the top of the floor into the page background (replaces the old animated mask) */
+html::after {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(58vh + 80px);
+  z-index: -1;
+  background: linear-gradient(to bottom, var(--bg) 80px, transparent calc(80px + 21vh));
 }
 
 .shoot {
@@ -407,6 +465,7 @@ html::after {
   height: 2px;
   pointer-events: none;
   opacity: 0;
+  will-change: transform, opacity;
   background: linear-gradient(90deg, transparent, var(--accent2));
   animation: shoot 6s linear infinite;
 }
@@ -430,20 +489,20 @@ html::after {
   animation-delay: 4s
 }
 
+/* floor: taller by 60px (one grid tile) so it can slide down by one tile and loop seamlessly */
 body::before {
   left: -60%;
   right: -60%;
   bottom: 0;
-  height: 58vh;
+  height: calc(58vh + 60px);
   z-index: -1;
   background-image:
     linear-gradient(color-mix(in srgb, var(--accent) 15%, transparent) 2px, transparent 2px),
     linear-gradient(90deg, color-mix(in srgb, var(--accent) 15%, transparent) 2px, transparent 2px);
   background-size: 60px 60px;
-  transform-origin: 50% 0;
+  transform-origin: 50% 60px;
   transform: perspective(300px) rotateX(62deg);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 35%);
-  mask-image: linear-gradient(to bottom, transparent, #000 35%);
+  will-change: transform;
   animation: floor 2.5s linear infinite;
 }
 
@@ -460,18 +519,6 @@ body::after {
 
   to {
     opacity: 1
-  }
-}
-
-@keyframes stars-drift {
-  to {
-    background-position: 230px 230px
-  }
-}
-
-@keyframes stars-drift2 {
-  to {
-    background-position: 340px 340px
   }
 }
 
@@ -498,11 +545,11 @@ body::after {
 
 @keyframes floor {
   from {
-    background-position: 0 0, 0 0
+    transform: perspective(300px) rotateX(62deg) translateY(0)
   }
 
   to {
-    background-position: 0 60px, 0 60px
+    transform: perspective(300px) rotateX(62deg) translateY(60px)
   }
 }
 
@@ -856,4 +903,258 @@ body::after {
 .hero p.sub b {
   font-weight: 500;
   color: var(--text)
+}
+
+/* Button pop-up (all .btn buttons). Same idea as the cards: the button and its block shadow are separate layers,
+   so hover only moves/transforms them (no repaint). The shadow stays put while the button lifts off it. */
+.btn {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  transition: transform .16s ease-out
+}
+
+.btn::before,
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  pointer-events: none
+}
+
+.btn::before {
+  background: var(--text);
+  transform: translate(4px, 4px);
+  transition: transform .16s ease-out
+}
+
+.btn::after {
+  background: var(--accent);
+  border: 2px solid var(--text)
+}
+
+.btn.alt,
+.btn.alt::after {
+  background: var(--surface)
+}
+
+.btn.alt {
+  background: transparent
+}
+
+@media (hover: hover) {
+  .btn:hover {
+    transform: translate(-3px, -3px)
+  }
+
+  .btn:hover::before {
+    transform: translate(7px, 7px)
+  }
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none
+}
+
+.btn:active::before {
+  transform: translate(2px, 2px)
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .btn,
+  .btn::before {
+    transition: none
+  }
+}
+
+/* Category bar: chips pop up on hover; the selected chip stays raised with a block shadow.
+   Background, border and shadow are separate layers so movement is transform/opacity only. */
+.chip {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  border-color: transparent;
+  transition: transform .16s ease-out;
+  animation: chipin .35s ease-out backwards
+}
+
+.chip::before,
+.chip::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  pointer-events: none
+}
+
+.chip::before {
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity .16s ease-out, transform .16s ease-out, background-color .16s ease-out
+}
+
+.chip::after {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  transition: background-color .16s ease-out, border-color .16s ease-out
+}
+
+.chip[aria-pressed="true"],
+.chip[aria-pressed="true"]::after {
+  background: var(--tag);
+  border-color: var(--tag)
+}
+
+.chip[aria-pressed="true"] {
+  background: transparent;
+  border-color: transparent;
+  color: var(--tagtext);
+  transform: translate(-2px, -2px)
+}
+
+.chip[aria-pressed="true"]::before {
+  background: var(--text);
+  opacity: 1;
+  transform: translate(4px, 4px)
+}
+
+@media (hover: hover) {
+  .chip:hover {
+    transform: translate(-2px, -2px)
+  }
+
+  .chip:hover::before {
+    opacity: 1;
+    transform: translate(4px, 4px)
+  }
+
+  .chip:not([aria-pressed="true"]):hover::after {
+    border-color: var(--accent2)
+  }
+}
+
+.chip:active {
+  transform: translate(1px, 1px)
+}
+
+.chip:active::before {
+  transform: translate(1px, 1px)
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 4px
+}
+
+.chip:nth-child(2) {
+  animation-delay: 40ms
+}
+
+.chip:nth-child(3) {
+  animation-delay: 80ms
+}
+
+.chip:nth-child(4) {
+  animation-delay: 120ms
+}
+
+.chip:nth-child(5) {
+  animation-delay: 160ms
+}
+
+.chip:nth-child(6) {
+  animation-delay: 200ms
+}
+
+.chip:nth-child(n+7) {
+  animation-delay: 240ms
+}
+
+@keyframes chipin {
+  from {
+    opacity: 0;
+    transform: translateY(8px)
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .chip,
+  .chip::before,
+  .chip::after {
+    transition: none;
+    animation: none
+  }
+}
+
+/* Search box: lifts with a block shadow when focused, border highlights on hover */
+input[type=search] {
+  caret-color: var(--accent);
+  transition: transform .16s ease-out, border-color .16s ease-out, box-shadow .16s ease-out, background-color .16s ease-out
+}
+
+input[type=search]::placeholder {
+  color: var(--muted);
+  opacity: .8;
+  transition: opacity .16s ease-out
+}
+
+@media (hover: hover) {
+  input[type=search]:hover {
+    border-color: var(--muted)
+  }
+}
+
+input[type=search]:focus {
+  outline: none;
+  border-color: var(--accent2);
+  background: color-mix(in srgb, var(--surface) 88%, var(--accent) 12%);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--accent)
+}
+
+input[type=search]:focus::placeholder {
+  opacity: .4
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  input[type=search],
+  input[type=search]::placeholder {
+    transition: none
+  }
+}
+
+/* match the browser's clear (×) button to the theme */
+input[type=search]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  background: var(--accent2);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2 2l10 10M12 2L2 12' stroke='black' stroke-width='2.4'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2 2l10 10M12 2L2 12' stroke='black' stroke-width='2.4'/%3E%3C/svg%3E") center / contain no-repeat
+}
+
+/* filtered-out cards (the .card display rule would otherwise override the hidden attribute) */
+.card[hidden] {
+  display: none
+}
+
+/* Promote cards, buttons and chips to their own GPU layers only while hovered.
+   Keeping them promoted all the time created dozens of layers that all had to be built at once
+   when a tab switch re-showed the whole grid. */
+@media (hover: hover) {
+
+  .card:hover,
+  .btn:hover,
+  .chip:hover {
+    will-change: transform
+  }
 }

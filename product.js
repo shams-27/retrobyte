@@ -1,28 +1,31 @@
 const $ = id => document.getElementById(id);
-const p = PRODUCTS.find(x => x.id === new URLSearchParams(location.search).get("id"));
 const root = $("detail");
+const pid = new URLSearchParams(location.search).get("id");
+let first = true;
 
-if (!p) {
-  root.innerHTML = `<div class="empty">Product not found. <a href="index.html#shop">Back to shop</a></div>`;
-} else {
+function show(status) {
+  if (status === "error") { root.innerHTML = `<div class="empty">Couldn’t load products. Please refresh the page.</div>`; return; }
+  const p = PRODUCTS.find(x => x.id === pid);
+  if (!p) {
+    root.innerHTML = `<div class="empty">Product not found. <a href="index.html#shop">Back to shop</a></div>`;
+    return;
+  }
   document.title = p.name + " · RetroByte";
   const off = p.old ? Math.round((1 - p.price / p.old) * 100) : 0;
   root.innerHTML = `
-    <nav class="crumb"><a href="index.html#shop">Shop</a> / ${p.cat} / ${p.name}</nav>
+    <nav class="crumb"><a href="index.html#shop">Shop</a> / ${esc(p.cat)} / ${esc(p.name)}</nav>
     <div class="detail">
-      <div class="dmedia">${p.badge ? `<span class="badge">${p.badge}</span>` : ""}<div class="thumb big"><img src="${fullSrc(p)}" data-src="${p.img}" ${FALLBACK} alt="${p.name}" width="1200" height="900" fetchpriority="high" decoding="async"></div></div>
+      <div class="dmedia">${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}<div class="thumb big"><img src="${esc(fullSrc(p))}" data-src="${esc(p.img)}" ${FALLBACK} alt="${esc(p.name)}" width="1200" height="900" fetchpriority="high" decoding="async"></div></div>
       <div class="dinfo">
-        <span class="cat">${p.cat}</span>
-        <h1>${p.name}</h1>
+        <span class="cat">${esc(p.cat)}</span>
+        <h1>${esc(p.name)}</h1>
         <div class="price big"><b>${fmt(p.price)}</b>${p.old ? `<s>${fmt(p.old)}</s><span class="save">Save ${off}%</span>` : ""}</div>
-        <p class="long">${p.long}</p>
+        <p class="long">${esc(p.long).replace(/\r?\n/g, "<br>")}</p>
         <div class="stock ${p.stock ? "ok" : "out"}">● ${p.stock ? "In stock" : "Out of stock"}</div>
         ${p.stock ? `<div class="qty"><button type="button" id="minus" aria-label="Decrease quantity">−</button><span id="n">1</span><button type="button" id="plus" aria-label="Increase quantity">+</button><span class="total" id="total"></span></div>` : ""}
         <a id="order" class="btn big-btn" target="_blank" rel="noopener">${p.stock ? "Order on WhatsApp" : "Ask about restock"}</a>
-        <h2 class="sec">Features</h2>
-        <ul class="feat">${p.features.map(f => `<li>${f}</li>`).join("")}</ul>
-        <h2 class="sec">Specifications</h2>
-        <table class="specs">${p.specs.map(s => `<tr><th>${s[0]}</th><td>${s[1]}</td></tr>`).join("")}</table>
+        ${p.features.length ? `<h2 class="sec">Features</h2><ul class="feat">${p.features.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}
+        ${p.specs.length ? `<h2 class="sec">Specifications</h2><table class="specs">${p.specs.map(s => `<tr><th>${esc(s[0])}</th><td>${esc(s[1])}</td></tr>`).join("")}</table>` : ""}
         <p class="note">Cash on delivery across Bangladesh. Delivery charge extra.</p>
       </div>
     </div>
@@ -46,3 +49,6 @@ if (!p) {
   const rel = [...others.filter(x => x.cat === p.cat), ...others.filter(x => x.cat !== p.cat)].slice(0, 4);
   $("related").innerHTML = rel.map(cardHTML).join("");
 }
+
+root.innerHTML = `<div class="empty">Loading…</div>`;
+loadProducts(show);
