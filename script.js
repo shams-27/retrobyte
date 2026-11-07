@@ -37,3 +37,22 @@ loadProducts(status => {
   if (status === "error") { $("grid").innerHTML = `<div class="empty">Couldn’t load products. Please refresh the page.</div>`; return; }
   chips(); build(); render();
 });
+
+/* Shop intro: reveal the search/chips and the product grid when they scroll into view,
+   but never before the tagline intro has finished (INTRO_MS after page load).
+   If the page is opened at #shop, or the browser can't observe, reveal immediately. */
+(function () {
+  const INTRO_MS = 1300;
+  const els = [document.querySelector("#shop .tools"), $("grid")].filter(Boolean);
+  const go = el => el.classList.add("go");
+  if (location.hash === "#shop" || !("IntersectionObserver" in window)) { els.forEach(go); return; }
+  const io = new IntersectionObserver(entries => {
+    for (const en of entries) {
+      if (!en.isIntersecting) continue;
+      io.unobserve(en.target);
+      setTimeout(() => go(en.target), Math.max(0, INTRO_MS - performance.now()));
+    }
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.01 });
+  els.forEach(el => io.observe(el));
+  setTimeout(() => els.forEach(go), 8000); // safety net: never leave the shop hidden
+})();

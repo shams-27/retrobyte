@@ -1405,12 +1405,21 @@ header.hero {
   animation: intro-rule .8s var(--intro-ease) 1.3s backwards
 }
 
-#shop .tools {
-  animation: intro-rise .8s var(--intro-ease) 1.3s backwards
+/* Shop: held (paused at its hidden first frame) until script.js adds .go, which happens once the tagline
+   intro is done AND the element is actually on screen. On phones the shop starts below the fold, so a
+   plain timer would finish before anyone scrolls down to see it. */
+#shop .tools,
+#shop .grid {
+  animation: intro-rise .8s var(--intro-ease) backwards paused
 }
 
 #shop .grid {
-  animation: intro-rise .8s var(--intro-ease) 1.42s backwards
+  animation-delay: .12s
+}
+
+#shop .tools.go,
+#shop .grid.go {
+  animation-play-state: running
 }
 
 /* arriving via a #shop link ("Back to shop"): skip the intro */
