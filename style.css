@@ -306,32 +306,6 @@ svg {
 }
 
 @media (max-width:600px) {
-  .tools {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px
-  }
-
-  .chips {
-    flex-wrap: wrap;
-    gap: 8px;
-    order: 2
-  }
-
-  .chip {
-    flex: 1 1 auto;
-    padding: 11px 12px;
-    text-align: center
-  }
-
-  input[type=search] {
-    margin-left: 0;
-    width: 100%;
-    flex: none;
-    font-size: 16px;
-    order: 1
-  }
-
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px
@@ -1578,8 +1552,8 @@ html[style*="overflow: hidden"]::before {
 }
 
 /* ===== Phones: search + "Filters" button (bottom sheet) instead of the category chips =====
-   Row 1: slim search box and a Filters button (with a badge showing how many filters are on).
-   Row 2 (only while filters are on): a one-line summary with a Clear button. */
+   Row 1: search box + Filters button, same height, same border / surface / lift-on-press style.
+   Row 2 (only while filters are on): one-line summary with a Clear button. */
 .filter-btn,
 .factive {
   display: none
@@ -1587,6 +1561,7 @@ html[style*="overflow: hidden"]::before {
 
 @media (max-width:600px) {
   .tools {
+    display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: stretch;
@@ -1594,61 +1569,87 @@ html[style*="overflow: hidden"]::before {
     margin: 18px 0 12px
   }
 
-  .chips {
-    display: none
+  .tools .chips {
+    display: none !important
   }
 
-  input[type=search] {
+  .tools input[type=search] {
     order: 1;
     flex: 1 1 0;
     width: auto;
     min-width: 0;
-    margin-left: 0;
-    padding: 9px 12px 9px 38px;
+    height: 46px;
+    margin: 0;
+    padding: 0 12px 0 40px;
     font-size: 16px;
     /* 16px stops iPhones from zooming in when the box is tapped */
-    line-height: 1.3;
+    line-height: 1;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a39878' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5L21 21'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: 12px center;
+    background-position: 13px center;
     background-size: 18px
   }
 
-  input[type=search]:focus {
+  .tools .filter-btn {
+    order: 2;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    margin: 0;
+    padding: 0 14px;
+    border: 2px solid var(--line);
+    border-radius: 0;
+    background: var(--surface);
+    color: var(--text);
+    font: 700 15px/1 "JetBrains Mono", monospace;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .16s ease-out, border-color .16s ease-out, box-shadow .16s ease-out
+  }
+
+  .tools .filter-btn svg {
+    flex: 0 0 auto;
+    color: var(--muted)
+  }
+
+  /* filters are on: same highlight the search box gets */
+  .tools .filter-btn:has(.fcount:not([hidden])) {
+    border-color: var(--accent2)
+  }
+
+  .tools .filter-btn:has(.fcount:not([hidden])) svg {
+    color: var(--accent2)
+  }
+
+  .tools .filter-btn:active {
     transform: translate(-1px, -1px);
     box-shadow: 3px 3px 0 var(--accent)
   }
 
-  .filter-btn {
-    order: 2;
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 0 13px;
-    border: 2px solid var(--line);
-    background: var(--surface);
-    color: var(--text);
-    font: 700 14px "JetBrains Mono", monospace;
-    cursor: pointer
+  .tools .filter-btn:focus-visible {
+    outline: none;
+    border-color: var(--accent2);
+    box-shadow: 3px 3px 0 var(--accent)
   }
 
-  .filter-btn:active {
-    transform: translate(1px, 1px)
-  }
-
-  .filter-btn:focus-visible {
-    outline: 2px solid var(--accent2);
-    outline-offset: 2px
+  .tools input[type=search]:focus {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--accent)
   }
 
   .fcount {
     min-width: 20px;
-    padding: 1px 5px;
+    padding: 2px 5px;
     background: var(--accent);
     color: var(--onaccent);
     font-size: 12px;
-    line-height: 1.4;
+    line-height: 1.2;
     text-align: center
   }
 
@@ -1656,7 +1657,7 @@ html[style*="overflow: hidden"]::before {
     display: none
   }
 
-  .factive {
+  .tools .factive {
     order: 3;
     flex: 1 0 100%;
     display: flex;
@@ -1667,7 +1668,7 @@ html[style*="overflow: hidden"]::before {
     color: var(--muted)
   }
 
-  .factive[hidden] {
+  .tools .factive[hidden] {
     display: none
   }
 
@@ -1680,6 +1681,7 @@ html[style*="overflow: hidden"]::before {
 
   .factive button {
     flex: 0 0 auto;
+    padding: 4px 0;
     border: 0;
     background: none;
     color: var(--accent2);
@@ -1706,6 +1708,7 @@ html[style*="overflow: hidden"]::before {
   display: flex;
   flex-direction: column;
   max-height: 85dvh;
+  overscroll-behavior: contain;
   background: var(--surface);
   border-top: 2px solid var(--text);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -1765,7 +1768,8 @@ html[style*="overflow: hidden"]::before {
 }
 
 .fl-opt {
-  padding: 8px 13px;
+  min-height: 42px;
+  padding: 8px 14px;
   border: 2px solid var(--line);
   background: var(--bg);
   color: var(--text);
