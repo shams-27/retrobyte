@@ -1487,41 +1487,15 @@ html[style*="overflow: hidden"]::before {
   animation: intro-rise .7s var(--intro-ease) calc(.24s + var(--i, 0) * .06s) backwards
 }
 
-#detail.intro .dinfo>:nth-child(1) {
-  --i: 0
-}
-
-#detail.intro .dinfo>:nth-child(2) {
-  --i: 1
-}
-
-#detail.intro .dinfo>:nth-child(3) {
-  --i: 2
-}
-
-#detail.intro .dinfo>:nth-child(4) {
-  --i: 3
-}
-
-#detail.intro .dinfo>:nth-child(5) {
-  --i: 4
-}
-
-#detail.intro .dinfo>:nth-child(6) {
-  --i: 5
-}
-
-#detail.intro .dinfo>:nth-child(7) {
-  --i: 6
-}
-
-#detail.intro .dinfo>:nth-child(8) {
-  --i: 7
-}
-
-#detail.intro .dinfo>:nth-child(n+9) {
-  --i: 8
-}
+#detail.intro .dinfo>:nth-child(1) { --i: 0 }
+#detail.intro .dinfo>:nth-child(2) { --i: 1 }
+#detail.intro .dinfo>:nth-child(3) { --i: 2 }
+#detail.intro .dinfo>:nth-child(4) { --i: 3 }
+#detail.intro .dinfo>:nth-child(5) { --i: 4 }
+#detail.intro .dinfo>:nth-child(6) { --i: 5 }
+#detail.intro .dinfo>:nth-child(7) { --i: 6 }
+#detail.intro .dinfo>:nth-child(8) { --i: 7 }
+#detail.intro .dinfo>:nth-child(n+9) { --i: 8 }
 
 #detail.intro .sec.rel,
 #detail.intro #related {
@@ -1545,6 +1519,30 @@ html[style*="overflow: hidden"]::before {
   #detail.intro .dinfo>*,
   #detail.intro .sec.rel,
   #detail.intro #related {
+    animation: none
+  }
+}
+
+/* Load more button + newly revealed cards */
+.more {
+  grid-column: 1/-1;
+  display: flex;
+  justify-content: center;
+  padding: 14px 0 4px
+}
+
+.more .btn {
+  min-width: min(320px, 100%);
+  text-align: center;
+  cursor: pointer
+}
+
+.card.pop {
+  animation: intro-rise .5s var(--intro-ease) backwards
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.pop {
     animation: none
   }
 }

@@ -4,6 +4,11 @@
 const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycbzCiiw1mmeATy4s9yFlQy-HLclINaXrhDSf3Yj13bub84vEgqNZGjS32CJ934zztG1rSw/exec";
 // Google Sheets > File > Share > Publish to web > pick the "Products" tab > CSV > Publish > paste the link here
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5r5Xr32rGRg3pV-nvNdqt3fJ2kwWA2MdeUwpUjLNmvNGkHRosDohx8hKamu8ak4HMxViJLsbNVfb/pub?gid=382459831&single=true&output=csv";
+// Where product images are hosted (must end with "/"). Leave "" to use the local images/ folder instead.
+const IMAGE_BASE = "https://shams.retrobyte-2026.workers.dev/";
+// File type of your images. Used when the sheet's image cell is blank (image = <product id> + this) and
+// when a file name in the sheet is written without an ending (e.g. "cbs01" -> "cbs01.jpg").
+const IMAGE_EXT = ".jpg";
 /* ======================================================== */
 
 let PRODUCTS = [];
@@ -56,19 +61,20 @@ function csvToProducts(text) {
     while (used.has(id)) id = slug(g("id") || name) + "-" + n++;
     used.add(id);
     const img = g("image");
-    const toPath = v => /^(https?:|data:)/i.test(v) ? v : "images/" + v;
-    const mainImg = !img ? "images/" + id + ".png" : toPath(img);
-    // gallery column: a number N = images/<id>.png, <id>-2.png ... <id>-N.png; or one file name / link per line
+    const dir = IMAGE_BASE || "images/";
+    const toPath = v => /^(https?:|data:)/i.test(v) ? v : dir + (/\.[a-z0-9]{2,5}$/i.test(v) ? v : v + IMAGE_EXT);
+    const mainImg = !img ? dir + id + IMAGE_EXT : toPath(img);
+    // gallery column: a number N = <id>.jpg, <id>-2.jpg ... <id>-N.jpg (in IMAGE_BASE); or one file name / link per line
     const gal = g("gallery");
     let extras = [];
-    if (/^\d+$/.test(gal)) { for (let i = 2; i <= Math.min(parseInt(gal, 10), 10); i++) extras.push("images/" + id + "-" + i + ".png"); }
+    if (/^\d+$/.test(gal)) { for (let i = 2; i <= Math.min(parseInt(gal, 10), 10); i++) extras.push(dir + id + "-" + i + IMAGE_EXT); }
     else extras = lines(gal).map(toPath);
     out.push({
       id, name, price, old,
       cat: g("category") || "Other",
       badge: g("badge"),
       stock: !isNo(g("in_stock")),
-      // image column blank -> images/<id>.png (e.g. CBS01 -> images/cbs01.png); otherwise a file name or full link
+      // image column blank -> <IMAGE_BASE><id><IMAGE_EXT> (e.g. CBS01 -> .../cbs01.jpg); otherwise a file name or full link
       img: mainImg,
       imgs: [...new Set([mainImg, ...extras])].slice(0, 10),
       desc: g("short_description"),
