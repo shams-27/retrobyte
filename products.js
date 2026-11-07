@@ -110,14 +110,17 @@ const optimized = (path, w, h) => (IMG_CDN && !path.startsWith("data:"))
   ? "https://wsrv.nl/?url=" + encodeURIComponent(new URL(path, location.href).href) + "&w=" + w + "&h=" + h + "&fit=cover&output=webp&q=78&we=1"
   : path;
 const fullSrc = p => optimized(p.img, 1200, 900);
+// several sizes (4:3) so phones download small images and sharp/large screens get bigger ones
+const srcset = (path, widths) => IMG_CDN && !path.startsWith("data:")
+  ? widths.map(w => optimized(path, w, Math.round(w * 3 / 4)) + " " + w + "w").join(", ") : "";
 const thumbSrc = p => optimized(p.img, 600, 450);
 // if the CDN image fails, try the original file; if that is missing too, show the "No image" placeholder
-const FALLBACK = 'onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.dataset.src}else{this.onerror=null;this.src=PLACEHOLDER}"';
+const FALLBACK = 'onerror="if(!this.dataset.f){this.dataset.f=1;this.removeAttribute(\'srcset\');this.removeAttribute(\'sizes\');this.src=this.dataset.src}else{this.onerror=null;this.src=PLACEHOLDER}"';
 
 const fmt = n => "৳" + n.toLocaleString("en-IN");
 function cardHTML(p) {
   return `<article class="card">${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}
-    <div class="thumb"><img src="${esc(thumbSrc(p))}" data-src="${esc(p.img)}" ${FALLBACK} alt="${esc(p.name)}" width="600" height="450" loading="lazy" decoding="async"></div>
+    <div class="thumb"><img src="${esc(thumbSrc(p))}"${srcset(p.img, [320, 480, 640]) ? ` srcset="${esc(srcset(p.img, [320, 480, 640]))}" sizes="(max-width:600px) 50vw, 300px"` : ""} data-src="${esc(p.img)}" ${FALLBACK} alt="${esc(p.name)}" width="600" height="450" loading="lazy" decoding="async"></div>
     <h3><a class="stretch" href="product.html?id=${encodeURIComponent(p.id)}">${esc(p.name)}</a></h3>
     <p>${esc(p.desc)}</p>
     ${p.stock ? "" : `<div class="stock out">● Out of stock</div>`}

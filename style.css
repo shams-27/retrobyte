@@ -1302,3 +1302,158 @@ input[type=search]::-webkit-search-cancel-button {
     transition: none
   }
 }
+
+/* ===== Page-load intro: one continuous cascade =====
+   Everything shares the same easing and the same "rise + fade" motion, and each step starts
+   before the previous one has finished, so it reads as a single flow instead of separate effects.
+   Order: tagline line 1 -> line 2 (+ punctuation marks as the wipe passes them)
+          -> subline -> button -> dashed line / search + chips -> products.
+   The shop starts the moment the tagline finishes (about 1.3s). */
+:root {
+  --intro-ease: cubic-bezier(.22, 1, .36, 1);
+  --intro-rise: 14px
+}
+
+@keyframes intro-line {
+  from {
+    opacity: 0;
+    transform: translateY(.3em);
+    clip-path: inset(-.15em 100% -.15em -.2em)
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(-.15em -.3em -.15em -.2em)
+  }
+}
+
+@keyframes intro-mark {
+  from {
+    transform: skewX(-14deg) scaleY(0)
+  }
+
+  to {
+    transform: skewX(-14deg) scaleY(1)
+  }
+}
+
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--intro-rise))
+  }
+
+  to {
+    opacity: 1;
+    transform: none
+  }
+}
+
+@keyframes intro-rule {
+  from {
+    border-bottom-color: transparent
+  }
+
+  to {
+    border-bottom-color: var(--line)
+  }
+}
+
+/* tagline */
+.tagline .l1,
+.tagline .l2 {
+  animation: intro-line .9s var(--intro-ease) backwards
+}
+
+.tagline .l1 {
+  animation-delay: .1s
+}
+
+.tagline .l2 {
+  animation-delay: .4s
+}
+
+.tagline .p::before {
+  transform-origin: 50% 100%;
+  animation: intro-mark .5s var(--intro-ease) backwards
+}
+
+/* each mark draws just as the wipe reaches it */
+.tagline .l1 .p.a::before {
+  animation-delay: .5s
+}
+
+.tagline .l1 .p.c::before {
+  animation-delay: .85s
+}
+
+.tagline .l2 .p.a::before {
+  animation-delay: .85s
+}
+
+/* everything after the tagline: same rise, 0.1s apart, overlapping */
+.hero p.sub {
+  animation: intro-rise .8s var(--intro-ease) 1.05s backwards
+}
+
+.hero .nav {
+  animation: intro-rise .8s var(--intro-ease) 1.15s backwards
+}
+
+header.hero {
+  animation: intro-rule .8s var(--intro-ease) 1.3s backwards
+}
+
+#shop .tools {
+  animation: intro-rise .8s var(--intro-ease) 1.3s backwards
+}
+
+#shop .grid {
+  animation: intro-rise .8s var(--intro-ease) 1.42s backwards
+}
+
+/* arriving via a #shop link ("Back to shop"): skip the intro */
+.wrap:has(#shop:target) .tagline .l1,
+.wrap:has(#shop:target) .tagline .l2,
+.wrap:has(#shop:target) .tagline .p::before,
+.wrap:has(#shop:target) .hero p.sub,
+.wrap:has(#shop:target) .hero .nav,
+.wrap:has(#shop:target) header.hero,
+.wrap:has(#shop:target) #shop .tools,
+.wrap:has(#shop:target) #shop .grid {
+  animation: none
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .tagline .l1,
+  .tagline .l2,
+  .tagline .p::before,
+  .hero p.sub,
+  .hero .nav,
+  header.hero,
+  #shop .tools,
+  #shop .grid {
+    animation: none
+  }
+}
+
+/* ===== Performance on phones / low-power devices =====
+   Touch devices skip the two purely decorative full-screen effects: the scanline overlay
+   (a fixed layer blended over the whole page every frame) and the shooting stars.
+   The stars, the moving grid floor and all hover effects stay. */
+@media (hover: none) {
+
+  body::after,
+  .shoot {
+    display: none
+  }
+}
+
+/* Pause the endless background animations while a menu/modal is open, since the page behind is covered */
+html[style*="overflow: hidden"] .shoot,
+html[style*="overflow: hidden"] body::before,
+html[style*="overflow: hidden"]::before {
+  animation-play-state: paused
+}
