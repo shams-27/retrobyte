@@ -1466,3 +1466,85 @@ html[style*="overflow: hidden"] body::before,
 html[style*="overflow: hidden"]::before {
   animation-play-state: paused
 }
+
+/* ===== Product page intro (same easing + rise as the home page) =====
+   Order: top bar -> breadcrumb -> gallery -> info column, one piece at a time (0.06s apart)
+   -> "You may also like", which reveals when scrolled into view (see product.js).
+   #detail.intro is only set for the first render, so a background data refresh never replays it. */
+.topbar {
+  animation: intro-rise .7s var(--intro-ease) backwards
+}
+
+#detail.intro .crumb {
+  animation: intro-rise .7s var(--intro-ease) .08s backwards
+}
+
+#detail.intro .dmedia {
+  animation: intro-rise .8s var(--intro-ease) .16s backwards
+}
+
+#detail.intro .dinfo>* {
+  animation: intro-rise .7s var(--intro-ease) calc(.24s + var(--i, 0) * .06s) backwards
+}
+
+#detail.intro .dinfo>:nth-child(1) {
+  --i: 0
+}
+
+#detail.intro .dinfo>:nth-child(2) {
+  --i: 1
+}
+
+#detail.intro .dinfo>:nth-child(3) {
+  --i: 2
+}
+
+#detail.intro .dinfo>:nth-child(4) {
+  --i: 3
+}
+
+#detail.intro .dinfo>:nth-child(5) {
+  --i: 4
+}
+
+#detail.intro .dinfo>:nth-child(6) {
+  --i: 5
+}
+
+#detail.intro .dinfo>:nth-child(7) {
+  --i: 6
+}
+
+#detail.intro .dinfo>:nth-child(8) {
+  --i: 7
+}
+
+#detail.intro .dinfo>:nth-child(n+9) {
+  --i: 8
+}
+
+#detail.intro .sec.rel,
+#detail.intro #related {
+  animation: intro-rise .8s var(--intro-ease) backwards paused
+}
+
+#detail.intro #related {
+  animation-delay: .12s
+}
+
+#detail.intro .sec.rel.go,
+#detail.intro #related.go {
+  animation-play-state: running
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .topbar,
+  #detail.intro .crumb,
+  #detail.intro .dmedia,
+  #detail.intro .dinfo>*,
+  #detail.intro .sec.rel,
+  #detail.intro #related {
+    animation: none
+  }
+}

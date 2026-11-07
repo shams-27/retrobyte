@@ -79,6 +79,7 @@ function show(status) {
     return;
   }
   document.title = p.name + " · RetroByte";
+  root.classList.toggle("intro", first); // intro animation only on the first render
   const off = p.old ? Math.round((1 - p.price / p.old) * 100) : 0;
   root.innerHTML = `
     <nav class="crumb"><a href="index.html#shop">Shop</a> / ${esc(p.cat)} / ${esc(p.name)}</nav>
@@ -126,6 +127,17 @@ function show(status) {
   const others = PRODUCTS.filter(x => x.id !== p.id);
   const rel = [...others.filter(x => x.cat === p.cat), ...others.filter(x => x.cat !== p.cat)].slice(0, 4);
   $("related").innerHTML = rel.map(cardHTML).join("");
+
+  // "You may also like" reveals when it scrolls into view
+  const lateEls = [root.querySelector(".sec.rel"), $("related")].filter(Boolean);
+  if (first && "IntersectionObserver" in window) {
+    const io = new IntersectionObserver(es => es.forEach(en => {
+      if (en.isIntersecting) { en.target.classList.add("go"); io.unobserve(en.target); }
+    }), { rootMargin: "0px 0px -8% 0px", threshold: 0.01 });
+    lateEls.forEach(el => io.observe(el));
+    setTimeout(() => lateEls.forEach(el => el.classList.add("go")), 8000); // safety net
+  } else lateEls.forEach(el => el.classList.add("go"));
+  first = false;
 }
 
 root.innerHTML = `<div class="empty">Loading…</div>`;
