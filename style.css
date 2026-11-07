@@ -1491,15 +1491,41 @@ html[style*="overflow: hidden"]::before {
   animation: intro-rise .7s var(--intro-ease) calc(.24s + var(--i, 0) * .06s) backwards
 }
 
-#detail.intro .dinfo>:nth-child(1) { --i: 0 }
-#detail.intro .dinfo>:nth-child(2) { --i: 1 }
-#detail.intro .dinfo>:nth-child(3) { --i: 2 }
-#detail.intro .dinfo>:nth-child(4) { --i: 3 }
-#detail.intro .dinfo>:nth-child(5) { --i: 4 }
-#detail.intro .dinfo>:nth-child(6) { --i: 5 }
-#detail.intro .dinfo>:nth-child(7) { --i: 6 }
-#detail.intro .dinfo>:nth-child(8) { --i: 7 }
-#detail.intro .dinfo>:nth-child(n+9) { --i: 8 }
+#detail.intro .dinfo>:nth-child(1) {
+  --i: 0
+}
+
+#detail.intro .dinfo>:nth-child(2) {
+  --i: 1
+}
+
+#detail.intro .dinfo>:nth-child(3) {
+  --i: 2
+}
+
+#detail.intro .dinfo>:nth-child(4) {
+  --i: 3
+}
+
+#detail.intro .dinfo>:nth-child(5) {
+  --i: 4
+}
+
+#detail.intro .dinfo>:nth-child(6) {
+  --i: 5
+}
+
+#detail.intro .dinfo>:nth-child(7) {
+  --i: 6
+}
+
+#detail.intro .dinfo>:nth-child(8) {
+  --i: 7
+}
+
+#detail.intro .dinfo>:nth-child(n+9) {
+  --i: 8
+}
 
 #detail.intro .sec.rel,
 #detail.intro #related {
@@ -1548,5 +1574,66 @@ html[style*="overflow: hidden"]::before {
 @media (prefers-reduced-motion: reduce) {
   .card.pop {
     animation: none
+  }
+}
+
+/* ===== Compact search + category bar on phones =====
+   Search box on top (slim, with a magnifier icon); categories below as ONE swipeable row instead of
+   wrapping onto several uneven lines. The row runs edge to edge and fades out at the sides. */
+@media (max-width:600px) {
+  .tools {
+    gap: 10px;
+    margin: 18px 0 12px
+  }
+
+  input[type=search] {
+    padding: 9px 12px 9px 38px;
+    font-size: 16px;
+    /* 16px stops iPhones from zooming in when the box is tapped */
+    line-height: 1.3;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a39878' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5L21 21'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    background-size: 18px
+  }
+
+  input[type=search]:focus {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--accent)
+  }
+
+  .chips {
+    position: relative;
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 0 -14px;
+    /* run to the screen edges (page padding is 14px here) */
+    padding: 4px 14px 8px;
+    /* room for the raised chip's shadow */
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 26px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 26px), transparent 100%)
+  }
+
+  .chips::-webkit-scrollbar {
+    display: none
+  }
+
+  .chip {
+    flex: 0 0 auto;
+    padding: 7px 13px;
+    font-size: 13px;
+    line-height: 1.3;
+    white-space: nowrap;
+    scroll-snap-align: start
+  }
+
+  .chip[aria-pressed="true"]::before {
+    transform: translate(3px, 3px)
   }
 }
