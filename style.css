@@ -1577,16 +1577,33 @@ html[style*="overflow: hidden"]::before {
   }
 }
 
-/* ===== Compact search + category bar on phones =====
-   Search box on top (slim, with a magnifier icon); categories below as ONE swipeable row instead of
-   wrapping onto several uneven lines. The row runs edge to edge and fades out at the sides. */
+/* ===== Phones: search + "Filters" button (bottom sheet) instead of the category chips =====
+   Row 1: slim search box and a Filters button (with a badge showing how many filters are on).
+   Row 2 (only while filters are on): a one-line summary with a Clear button. */
+.filter-btn,
+.factive {
+  display: none
+}
+
 @media (max-width:600px) {
   .tools {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
     gap: 10px;
     margin: 18px 0 12px
   }
 
+  .chips {
+    display: none
+  }
+
   input[type=search] {
+    order: 1;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    margin-left: 0;
     padding: 9px 12px 9px 38px;
     font-size: 16px;
     /* 16px stops iPhones from zooming in when the box is tapped */
@@ -1602,38 +1619,202 @@ html[style*="overflow: hidden"]::before {
     box-shadow: 3px 3px 0 var(--accent)
   }
 
-  .chips {
-    position: relative;
-    flex-wrap: nowrap;
-    gap: 8px;
-    margin: 0 -14px;
-    /* run to the screen edges (page padding is 14px here) */
-    padding: 4px 14px 8px;
-    /* room for the raised chip's shadow */
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 26px), transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 26px), transparent 100%)
+  .filter-btn {
+    order: 2;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 13px;
+    border: 2px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font: 700 14px "JetBrains Mono", monospace;
+    cursor: pointer
   }
 
-  .chips::-webkit-scrollbar {
+  .filter-btn:active {
+    transform: translate(1px, 1px)
+  }
+
+  .filter-btn:focus-visible {
+    outline: 2px solid var(--accent2);
+    outline-offset: 2px
+  }
+
+  .fcount {
+    min-width: 20px;
+    padding: 1px 5px;
+    background: var(--accent);
+    color: var(--onaccent);
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: center
+  }
+
+  .fcount[hidden] {
     display: none
   }
 
-  .chip {
-    flex: 0 0 auto;
-    padding: 7px 13px;
+  .factive {
+    order: 3;
+    flex: 1 0 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
     font-size: 13px;
-    line-height: 1.3;
-    white-space: nowrap;
-    scroll-snap-align: start
+    color: var(--muted)
   }
 
-  .chip[aria-pressed="true"]::before {
-    transform: translate(3px, 3px)
+  .factive[hidden] {
+    display: none
+  }
+
+  .factive span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+  }
+
+  .factive button {
+    flex: 0 0 auto;
+    border: 0;
+    background: none;
+    color: var(--accent2);
+    font: 700 13px "JetBrains Mono", monospace;
+    text-decoration: underline;
+    cursor: pointer
+  }
+}
+
+/* The filters sheet (slides up from the bottom) */
+.fl-ov {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, .6)
+}
+
+.fl-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  max-height: 85dvh;
+  background: var(--surface);
+  border-top: 2px solid var(--text);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: flup .22s ease-out
+}
+
+.fl-ov[hidden],
+.fl-sheet[hidden] {
+  display: none
+}
+
+@keyframes flup {
+  from {
+    transform: translateY(40px);
+    opacity: 0
+  }
+}
+
+.fl-grip {
+  width: 44px;
+  height: 4px;
+  margin: 8px auto 0;
+  background: var(--line)
+}
+
+.fl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px 10px;
+  border-bottom: 2px dashed var(--line)
+}
+
+.fl-head h2 {
+  margin: 0;
+  font-size: 18px
+}
+
+.fl-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 18px 8px
+}
+
+.fl-h {
+  margin: 16px 0 10px;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted)
+}
+
+.fl-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px
+}
+
+.fl-opt {
+  padding: 8px 13px;
+  border: 2px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font: 700 14px "JetBrains Mono", monospace;
+  cursor: pointer
+}
+
+.fl-opt span {
+  margin-left: 4px;
+  color: var(--muted);
+  font-weight: 400
+}
+
+.fl-opt[aria-pressed="true"] {
+  background: var(--tag);
+  border-color: var(--tag);
+  color: var(--tagtext)
+}
+
+.fl-opt[aria-pressed="true"] span {
+  color: inherit;
+  opacity: .8
+}
+
+.fl-opt:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 2px
+}
+
+.fl-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px 16px;
+  border-top: 2px dashed var(--line)
+}
+
+.fl-foot .btn {
+  flex: 1;
+  text-align: center;
+  padding: 13px 8px
+}
+
+.fl-foot .cart-clear {
+  align-self: center
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-sheet {
+    animation: none
   }
 }
