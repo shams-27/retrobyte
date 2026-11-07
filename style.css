@@ -689,6 +689,10 @@ body::after {
   color: #d64545
 }
 
+.stock.soon {
+  color: var(--accent2)
+}
+
 .qty {
   display: flex;
   align-items: center;

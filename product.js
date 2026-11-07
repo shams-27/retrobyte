@@ -80,11 +80,13 @@ function show(status) {
   }
   document.title = p.name + " · RetroByte";
   root.classList.toggle("intro", first); // intro animation only on the first render
+  const up = p.upcoming, canQty = p.stock || up;
+  const badge = p.badge || (up ? "Coming soon" : "");
   const off = p.old ? Math.round((1 - p.price / p.old) * 100) : 0;
   root.innerHTML = `
     <nav class="crumb"><a href="index.html#shop">Shop</a> / ${esc(p.cat)} / ${esc(p.name)}</nav>
     <div class="detail">
-      <div class="dmedia">${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}
+      <div class="dmedia">${badge ? `<span class="badge">${esc(badge)}</span>` : ""}
         <div class="gal">
           <div class="thumb big gstage" id="gstage">
             <img id="gmain" width="1200" height="900" fetchpriority="high" decoding="async" alt="${esc(p.name)}">
@@ -100,9 +102,9 @@ function show(status) {
         <h1>${esc(p.name)}</h1>
         <div class="price big"><b>${fmt(p.price)}</b>${p.old ? `<s>${fmt(p.old)}</s><span class="save">Save ${off}%</span>` : ""}</div>
         <p class="long">${esc(p.long).replace(/\r?\n/g, "<br>")}</p>
-        <div class="stock ${p.stock ? "ok" : "out"}">● ${p.stock ? "In stock" : "Out of stock"}</div>
-        ${p.stock ? `<div class="qty"><button type="button" id="minus" aria-label="Decrease quantity">−</button><span id="n">1</span><button type="button" id="plus" aria-label="Increase quantity">+</button><span class="total" id="total"></span></div>` : ""}
-        <div class="actions">${p.stock ? `<button type="button" id="addcart" class="btn alt big-btn">Add to cart</button>` : ""}<button type="button" id="order" class="btn big-btn" data-order="${esc(p.id)}"${p.stock ? "" : ' data-type="restock"'}>${p.stock ? "Order now" : "Ask about restock"}</button></div>
+        <div class="stock ${up ? "soon" : p.stock ? "ok" : "out"}">● ${up ? "Upcoming" + (p.expected ? " · Expected " + esc(p.expected) : "") : p.stock ? "In stock" : "Out of stock"}</div>
+        ${canQty ? `<div class="qty"><button type="button" id="minus" aria-label="Decrease quantity">−</button><span id="n">1</span><button type="button" id="plus" aria-label="Increase quantity">+</button><span class="total" id="total"></span></div>` : ""}
+        <div class="actions">${p.stock ? `<button type="button" id="addcart" class="btn alt big-btn">Add to cart</button>` : ""}<button type="button" id="order" class="btn big-btn" data-order="${esc(p.id)}"${p.stock ? "" : up ? ' data-type="prebook"' : ' data-type="restock"'}>${p.stock ? "Order now" : up ? "Pre-book now" : "Ask about restock"}</button></div>
         ${p.features.length ? `<h2 class="sec">Features</h2><ul class="feat">${p.features.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}
         ${p.specs.length ? `<h2 class="sec">Specifications</h2><table class="specs">${p.specs.map(s => `<tr><th>${esc(s[0])}</th><td>${esc(s[1])}</td></tr>`).join("")}</table>` : ""}
         <p class="note">Cash on delivery across Bangladesh. Delivery charge extra.</p>
@@ -113,14 +115,14 @@ function show(status) {
 
   let qty = 1;
   const upd = () => {
-    if (p.stock) { $("n").textContent = qty; $("total").textContent = "Total: " + fmt(p.price * qty); }
+    if (canQty) { $("n").textContent = qty; $("total").textContent = "Total: " + fmt(p.price * qty); }
     $("order").dataset.qty = qty;
   };
-  if (p.stock) {
+  if (canQty) {
     $("minus").onclick = () => { qty = Math.max(1, qty - 1); upd(); };
     $("plus").onclick = () => { qty = Math.min(20, qty + 1); upd(); };
-    $("addcart").onclick = () => cartAdd(p.id, qty);
   }
+  if (p.stock) $("addcart").onclick = () => cartAdd(p.id, qty);
   upd();
   initGallery(p);
 

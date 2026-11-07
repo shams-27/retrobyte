@@ -39,6 +39,7 @@ function parseCSV(text) {
 }
 
 /* ---------- sheet rows -> PRODUCTS ---------- */
+const isYes = v => /^(true|yes|y|1|upcoming|coming soon)$/i.test(String(v).trim());
 const isNo = v => /^(false|no|n|0|out|out of stock)$/i.test(String(v).trim());
 const lines = v => String(v || "").split(/\r?\n|\|/).map(s => s.trim()).filter(Boolean);
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "product";
@@ -69,11 +70,14 @@ function csvToProducts(text) {
     let extras = [];
     if (/^\d+$/.test(gal)) { for (let i = 2; i <= Math.min(parseInt(gal, 10), 10); i++) extras.push(dir + id + "-" + i + IMAGE_EXT); }
     else extras = lines(gal).map(toPath);
+    const upcoming = isYes(g("upcoming"));   // "upcoming" ticked = not on sale yet, customers can pre-book
     out.push({
       id, name, price, old,
       cat: g("category") || "Other",
       badge: g("badge"),
-      stock: !isNo(g("in_stock")),
+      upcoming,
+      expected: g("expected") || g("release_date"),   // free text, e.g. "Dec 2026" or "15 January"
+      stock: !upcoming && !isNo(g("in_stock")),
       // image column blank -> <IMAGE_BASE><id><IMAGE_EXT> (e.g. CBS01 -> .../cbs01.jpg); otherwise a file name or full link
       img: mainImg,
       imgs: [...new Set([mainImg, ...extras])].slice(0, 10),
@@ -125,13 +129,14 @@ const FALLBACK = 'onerror="if(!this.dataset.f){this.dataset.f=1;this.removeAttri
 
 const fmt = n => "৳" + n.toLocaleString("en-IN");
 function cardHTML(p) {
-  return `<article class="card">${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}
+  const badge = p.badge || (p.upcoming ? "Coming soon" : "");
+  return `<article class="card">${badge ? `<span class="badge">${esc(badge)}</span>` : ""}
     <div class="thumb"><img src="${esc(thumbSrc(p))}"${srcset(p.img, [320, 480, 640]) ? ` srcset="${esc(srcset(p.img, [320, 480, 640]))}" sizes="(max-width:600px) 50vw, 300px"` : ""} data-src="${esc(p.img)}" ${FALLBACK} alt="${esc(p.name)}" width="600" height="450" loading="lazy" decoding="async"></div>
     <h3><a class="stretch" href="product.html?id=${encodeURIComponent(p.id)}">${esc(p.name)}</a></h3>
     <p>${esc(p.desc)}</p>
-    ${p.stock ? "" : `<div class="stock out">● Out of stock</div>`}
+    ${p.upcoming ? `<div class="stock soon">● Upcoming${p.expected ? " · " + esc(p.expected) : ""}</div>` : p.stock ? "" : `<div class="stock out">● Out of stock</div>`}
     <div class="price"><b>${fmt(p.price)}</b>${p.old ? `<s>${fmt(p.old)}</s>` : ""}</div>
     <div class="card-actions">${p.stock ? `<button type="button" class="btn alt" data-add="${esc(p.id)}">Add to cart</button>` : ""}
-    <button type="button" class="btn" data-order="${esc(p.id)}"${p.stock ? "" : ' data-type="restock"'}>${p.stock ? "Order now" : "Ask about restock"}</button></div>
+    <button type="button" class="btn" data-order="${esc(p.id)}"${p.stock ? "" : p.upcoming ? ' data-type="prebook"' : ' data-type="restock"'}>${p.stock ? "Order now" : p.upcoming ? "Pre-book" : "Ask about restock"}</button></div>
   </article>`;
 }

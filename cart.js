@@ -86,7 +86,7 @@ function cartRender() {
       <img src="${esc(optimized(p.img, 160, 120))}" data-src="${esc(p.img)}" ${FALLBACK} alt="" width="80" height="60" decoding="async">
       <div class="ci">
         <a href="product.html?id=${encodeURIComponent(p.id)}">${esc(p.name)}</a>
-        <div class="cp">${fmt(p.price)}${ok ? "" : " · Out of stock (not included)"}</div>
+        <div class="cp">${fmt(p.price)}${ok ? "" : p.upcoming ? " · Upcoming, pre-book it from its page (not included)" : " · Out of stock (not included)"}</div>
         <div class="cq">
           ${ok ? `<button type="button" data-id="${esc(id)}" data-d="-1" data-k="${esc(id)}|-1" aria-label="Decrease quantity">−</button><span>${q}</span><button type="button" data-id="${esc(id)}" data-d="1" data-k="${esc(id)}|1" aria-label="Increase quantity">+</button>` : ""}
           <button type="button" class="rm" data-id="${esc(id)}" data-rm="1" data-k="${esc(id)}|rm">Remove</button>

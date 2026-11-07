@@ -1,6 +1,6 @@
 /* ===== Order form: customer details are emailed to the shop through ORDER_ENDPOINT ===== */
 const ORDER_SAVE_KEY = "retrobyte_customer_v1";
-let ORDER = null;          // { items: [{ id, qty }], fromCart, type: "order" | "restock" }
+let ORDER = null;          // { items: [{ id, qty }], fromCart, type: "order" | "restock" | "prebook" }
 let orderBusy = false, orderLast = null;
 
 const orderRoot = document.createElement("div");
@@ -20,13 +20,13 @@ function orderRemember(d) { try { localStorage.setItem(ORDER_SAVE_KEY, JSON.stri
 function orderLines() {
   return ORDER.items.map(it => {
     const p = cartFind(it.id);
-    return p ? { id: p.id, name: p.name, qty: it.qty, price: p.price } : null;
+    return p ? { id: p.id, name: p.name, qty: it.qty, price: p.price, expected: p.expected || "" } : null;
   }).filter(Boolean);
 }
 
 function orderOpen(items, fromCart, type) {
   if (!PRODUCTS.length) return;
-  ORDER = { items, fromCart: !!fromCart, type: type === "restock" ? "restock" : "order" };
+  ORDER = { items, fromCart: !!fromCart, type: type === "restock" ? "restock" : type === "prebook" ? "prebook" : "order" };
   if (!orderLines().length) return;
   orderLast = document.activeElement;
   orderForm();
@@ -42,14 +42,16 @@ function orderClose() {
   if (orderLast && orderLast.focus) orderLast.focus();
 }
 
+const orderBtnLabel = () => ORDER.type === "restock" ? "Send request" : ORDER.type === "prebook" ? "Pre-book now" : "Place order";
+
 function orderForm() {
-  const restock = ORDER.type === "restock", lines = orderLines(), s = orderSaved();
+  const restock = ORDER.type === "restock", pre = ORDER.type === "prebook", lines = orderLines(), s = orderSaved();
   const total = lines.reduce((t, l) => t + l.price * l.qty, 0);
-  ordTitle.textContent = restock ? "Restock request" : "Your details";
+  ordTitle.textContent = restock ? "Restock request" : pre ? "Pre-book" : "Your details";
   ordBody.innerHTML = `
     <ul class="ord-items">${lines.map(l => `<li><span>${l.qty} × ${esc(l.name)}</span>${restock ? "" : `<b>${fmt(l.price * l.qty)}</b>`}</li>`).join("")}</ul>
     ${restock ? "" : `<div class="ord-total"><span>Total</span><b>${fmt(total)}</b></div>
-    <p class="cart-note">Delivery charge extra. Cash on delivery across Bangladesh.</p>`}
+    <p class="cart-note">${pre ? "This item isn't in stock yet" + (lines[0] && lines[0].expected ? " (expected " + esc(lines[0].expected) + ")" : "") + ". We'll call you to confirm your pre-booking and again when it arrives. " : ""}Delivery charge extra. Cash on delivery across Bangladesh.</p>`}
     <form id="ordform" novalidate>
       <label for="of-name">Full name</label>
       <input id="of-name" name="name" type="text" autocomplete="name" maxlength="100" value="${esc(s.name)}" required>
@@ -66,7 +68,7 @@ function orderForm() {
       <textarea id="of-note" name="note" rows="2" maxlength="400"></textarea>
       <input type="text" name="website" class="ord-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
       <p class="ord-err" id="ordmsg" role="alert"></p>
-      <button type="submit" class="btn big-btn" id="ordsubmit">${restock ? "Send request" : "Place order"}</button>
+      <button type="submit" class="btn big-btn" id="ordsubmit">${orderBtnLabel()}</button>
     </form>`;
 }
 
@@ -76,7 +78,7 @@ function orderValidate(f) {
   if (v("name").length < 2) return fail("name", "Please enter your name.");
   if (!/^(?:\+?88)?01[3-9]\d{8}$/.test(v("phone").replace(/[\s-]/g, ""))) return fail("phone", "Please enter a valid Bangladesh mobile number (01XXXXXXXXX).");
   if (v("email") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("email"))) return fail("email", "That email address doesn't look right.");
-  if (ORDER.type === "order") {
+  if (ORDER.type !== "restock") {
     if (v("area").length < 2) return fail("area", "Please enter your district or area.");
     if (v("address").length < 8) return fail("address", "Please enter your full delivery address.");
   }
@@ -92,12 +94,18 @@ async function orderSubmit(f) {
 
   const v = n => (f.elements[n] ? f.elements[n].value.trim() : "");
   const lines = orderLines();
+  const pre = ORDER.type === "prebook", exp = lines[0] && lines[0].expected;
+  // A pre-book is sent as a normal "order" (so the existing Apps Script handles it unchanged) but is clearly
+  // marked three ways: reference starts with PB-, the note starts with [PRE-BOOK], and item names end with "(Pre-book)".
   const data = {
-    type: ORDER.type,
-    ref: "RB-" + Date.now().toString(36).toUpperCase(),
+    type: pre ? "order" : ORDER.type,
+    prebook: pre,
+    ref: (pre ? "PB-" : "RB-") + Date.now().toString(36).toUpperCase(),
     name: v("name"), phone: v("phone").replace(/[\s-]/g, ""), email: v("email"),
-    area: v("area"), address: v("address"), note: v("note"), website: v("website"),
-    items: lines, total: lines.reduce((t, l) => t + l.price * l.qty, 0),
+    area: v("area"), address: v("address"),
+    note: (pre ? "[PRE-BOOK" + (exp ? " - expected " + exp : "") + "] " : "") + v("note"), website: v("website"),
+    items: pre ? lines.map(l => ({ ...l, name: l.name + " (Pre-book)" })) : lines,
+    total: lines.reduce((t, l) => t + l.price * l.qty, 0),
     page: location.href, sent: new Date().toISOString()
   };
 
@@ -112,19 +120,19 @@ async function orderSubmit(f) {
     orderDone(data);
   } catch (e) {
     console.error("Order failed:", e);
-    msg.textContent = "Sorry, we couldn't send your " + (ORDER.type === "restock" ? "request" : "order") + ". Please check your connection and try again.";
-    btn.disabled = false; btn.textContent = ORDER.type === "restock" ? "Send request" : "Place order";
+    msg.textContent = "Sorry, we couldn't send your " + (ORDER.type === "restock" ? "request" : pre ? "pre-booking" : "order") + ". Please check your connection and try again.";
+    btn.disabled = false; btn.textContent = orderBtnLabel();
   }
   orderBusy = false;
 }
 
 function orderDone(d) {
-  const restock = d.type === "restock";
-  ordTitle.textContent = restock ? "Request sent" : "Order received";
+  const restock = d.type === "restock", pre = !!d.prebook;
+  ordTitle.textContent = restock ? "Request sent" : pre ? "Pre-booking received" : "Order received";
   ordBody.innerHTML = `
     <div class="ord-done">
       <p class="ord-ok">✓</p>
-      <p>${restock ? "Thanks! We'll contact you when it's back in stock." : "Thank you! We'll call you on <b>" + esc(d.phone) + "</b> to confirm your order."}</p>
+      <p>${restock ? "Thanks! We'll contact you when it's back in stock." : pre ? "Thank you! We'll call you on <b>" + esc(d.phone) + "</b> to confirm your pre-booking, and again when it arrives." : "Thank you! We'll call you on <b>" + esc(d.phone) + "</b> to confirm your order."}</p>
       <p class="cart-note">Reference: <b>${esc(d.ref)}</b></p>
       <button type="button" class="btn big-btn" id="orddone">Close</button>
     </div>`;

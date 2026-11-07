@@ -25,11 +25,11 @@ function cardEl(it) {
   return it.el;
 }
 function build() {
-  items = PRODUCTS.map(p => ({ p, el: null, cat: p.cat, text: (p.name + " " + p.desc).toLowerCase() }));
+  items = PRODUCTS.map(p => ({ p, el: null, up: !!p.upcoming, cat: p.cat, text: (p.name + " " + p.desc).toLowerCase() }));
 }
 // from = index of the first card that is new on screen (they get a short fade-in); omit for no animation
 function render(from) {
-  const matches = items.filter(it => (active === "All" || it.cat === active) && it.text.includes(query));
+  const matches = items.filter(it => (active === "All" || (active === "Upcoming" ? it.up : it.cat === active)) && it.text.includes(query));
   const nodes = matches.slice(0, shown).map(cardEl);
   // first row on wide screens is visible right away: load those images immediately and with priority
   if (PAGE > 12) nodes.slice(0, 4).forEach(el => { const im = el.querySelector("img"); if (im) { im.loading = "eager"; im.fetchPriority = "high"; } });
@@ -50,7 +50,7 @@ function render(from) {
   $("grid").replaceChildren(...nodes);
 }
 function chips() {
-  const cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];
+  const cats = ["All", ...(PRODUCTS.some(p => p.upcoming) ? ["Upcoming"] : []), ...new Set(PRODUCTS.map(p => p.cat))];
   if (!cats.includes(active)) active = "All";
   $("chips").innerHTML = cats.map(c => `<button class="chip" aria-pressed="${c === active}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
 }
